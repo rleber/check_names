@@ -51,7 +51,7 @@ def main(args)
     show_help
     exit
   end
-  verbose ||= arg.size > 1
+  verbose ||= args.size > 1
   rc = 0
   args.each do |arg|
     status = GemName.check(arg)
