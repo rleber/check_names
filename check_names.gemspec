@@ -1,25 +1,51 @@
 
-github_username = 'rleber'
+# frozen_string_literal: true
 
-Gem::Specification.new do |s|
-  s.required_rubygems_version = Gem::Requirement.new(">= 1.3.6") if s.respond_to? :required_rubygems_version=
-  s.name = 'check_names'
-  s.authors = ["Richard LeBer"]
-  s.email = "richard.leber@gmail.com"
-  s.version = File.read(File.join(__dir__,'VERSION.txt')).chomp
-  s.date = %q{2025-06-14}
-  s.description = %q{Check whether names are in use}
-  s.executables = `git ls-files -- exe/*`.split("\n").map{ |f| File.basename(f) }
-  s.test_files = `git ls-files -- {spec,test}/*`.split("\n")
-  s.homepage = %Q{http://github.com/#{github_username}/#{s.name}}
-  s.rdoc_options = ['--charset=UTF-8', "--main", "README.md"]
-  s.rdoc_options << '--title' <<  'rleber check_names library'
-  s.rdoc_options << '--line-numbers' << '--inline-source'
-  s.rubygems_version = %q{1.3.6}
-  s.summary = s.description
-  s.files = `git ls-files -- {bin,lib,spec,test}/*`.split("\n")
-  s.require_paths = ["lib"]
-  s.rubygems_version = %q{3.1.4}
-  s.license = 'MIT'
+require_relative "lib/check_names/version"
+
+Gem::Specification.new do |spec|
+  gem_name = File.basename(__dir__)
+  puts "gem_name = #{gem_name}"
+  spec.name = gem_name
+  spec.version = CheckNames::VERSION # Can this be automated
+  spec.authors = ["Richard LeBer"]
+  spec.email = ["richard.leber@gmail.com"]
+  spec.date = %q{2025-06-14}
+  
+  spec.summary = %q{Check whether names are in use}
+  spec.description = spec.summary
+  github_username = `git config github.user`.chomp
+  spec.homepage = %Q{http://github.com/#{github_username}/#{spec.name}}
+  spec.license = "MIT"
+  spec.required_ruby_version = ">= 3.1.0"
+  spec.rdoc_options = ['--charset=UTF-8', "--main", "README.md"]
+  spec.rdoc_options << '--title' <<  'rleber check_names library'
+  spec.rdoc_options << '--line-numbers' << '--inline-source'
+
+  # spec.metadata["allowed_push_host"] = "TODO: Set to your gem server 'https://example.com'"
+
+  spec.metadata["homepage_uri"] = spec.homepage
+  # spec.metadata["source_code_uri"] = "TODO: Put your gem's public repo URL here."
+  spec.metadata["changelog_uri"] = spec.homepage + "/blob/master/CHANGELOG.md"
+
+  # Specify which files should be added to the gem when it is released.
+  # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
+  gemspec = File.basename(__FILE__)
+  spec.files = IO.popen(%w[git ls-files -z], chdir: __dir__, err: IO::NULL) do |ls|
+    ls.readlines("\x0", chomp: true).reject do |f|
+      (f == gemspec) ||
+        f.start_with?(*%w[bin/ test/ spec/ features/ .envrc .git .github appveyor Gemfile])
+    end
+  end
+  spec.bindir = "exe"
+  spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
+  spec.require_paths = ["lib"]
+  spec.rubygems_version = ">= 3.6.9"
+
+  # Uncomment to register a new dependency of your gem
+  # spec.add_dependency "example-gem", "~> 1.0"
+
+  # For more information and examples about making a new gem, check out our
+  # guide at: https://bundler.io/guides/creating_gem.html
 end
 
