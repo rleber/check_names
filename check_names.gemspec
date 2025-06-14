@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
   gem_name = File.basename(__dir__)
   puts "gem_name = #{gem_name}"
   spec.name = gem_name
-  spec.version = CheckNames::VERSION # Can this be automated
+  spec.version = CheckNames::VERSION # Can this be automated?
   spec.authors = ["Richard LeBer"]
   spec.email = ["richard.leber@gmail.com"]
   spec.date = %q{2025-06-14}
