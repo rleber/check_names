@@ -51,26 +51,64 @@ module GemName
     Module.const_defined?(class_name)
   end
 
-  def self.check(name)
+  CHECK_METHODS = [
+    {method: nil, description: "Unused"}, # 0
+    {method: :ruby_gem_exists?, description: "RubyGem"}, # 1
+    {method: :github_repository_exists?, description: "Github repository"}, # 2
+    {method: :executable_exists?, description: "Executable"}, # 3
+    {method: :function_exists?, description: "Function"}, # 4
+    {method: :alias_exists?, description: "Alias"}, # 5
+    {method: :standard_class_exists?, description: "Class"} # 6
+  ]
+
+  def self.unused_result
+    {check: 0, description: CHECK_METHODS[0][:description], result: true}
+  end
+
+  def self.check_name_once(check, name)
+    method = CHECK_METHODS[check] && CHECK_METHODS[check][:method]
+    if method
+      result = {check: check, description: CHECK_METHODS[check][:description], result: send(method, name)}
+    else
+      result = unused_result.dup
+    end
+    result[:name] = name
+    result
+  end
+
+  def self.check_name(name)
     name = name.downcase
-    if ruby_gem_exists?(name)
-      return {rc: 1, message: "A Gem on RubyGems"}
+    result = unused_result.dup
+    (1...(CHECK_METHODS.size)).each do |check|
+      res = check_name_once(check, name)
+      if res[:result]
+        result = res
+        break
+      end
     end
-    if github_repository_exists?(name)
-      return {rc: 2, message: "A personal Github repository"}
+    result[:name] = name
+    result
+  end
+
+  def self.check_name_all(name)
+    (1...(CHECK_METHODS.size)).map do |check|
+      check_name_once(check, name)
     end
-    if executable_exists?(name)
-      return {rc: 3, message: "An executable"}
+  end
+
+  def self.check_names(*names)
+    results = []
+    names.each do |name|
+      results << check_name(name)
     end
-    if function_exists?(name)
-      return {rc: 4, message: "A function"}
+    results
+  end
+
+  def self.check_names_all(*names)
+    results = []
+    names.each do |name|
+      results += check_name_all(name)
     end
-    if alias_exists?(name)
-      return {rc: 5, message: "An alias"}
-    end
-    if standard_class_exists?(name)
-      return {rc: 6, message: "A Ruby class"}
-    end
-    {rc: 0, message: "Available"}
+    results
   end
 end

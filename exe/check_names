@@ -40,6 +40,8 @@ The following options are available:
 
 --help  -h  Print this help information
 --quiet -q  Suppress messages about the status of the name check
+--all   -a  Normally, check_names stops at the first use it finds.
+            With --all, it checks and reports every use
   HELP
 end
 
@@ -47,16 +49,34 @@ def main(args)
   args = args.map { |arg| arg.downcase }
   quiet = args.index { |arg| %w{-q --quiet}.include?(arg) }
   args.delete_at(quiet) if quiet
+  all = args.index { |arg| %w{-a --all}.include?(arg) }
+  args.delete_at(all) if all
   if args.size == 0 || %w{-h --help help}.include?(args.first)
     show_help
     exit
   end
-  rc = 0
-  args.each do |arg|
-    status = GemName.check(arg)
-    puts "#{arg}: #{status[:message]}." unless quiet
-    rc = status[:rc] if status[:rc] > rc
+
+  if all
+    results = GemName.check_names_all(*args)
+  else
+    results = GemName.check_names(*args)
   end
+  
+  rc = 0
+
+  types = []
+  results.each.with_index(1) do |result, count|
+    types << result[:description] if result[:result]
+    rc = result[:check] if result[:check] > rc
+    if count >= results.size || results[count][:name] != result[:name]
+      unless quiet
+        types << "Unused" if types.size == 0
+        puts "#{result[:name]}: #{types.join(', ')}"
+      end
+      types = []
+    end
+  end
+  rc = 1 if rc > 0 && (all || args.size > 1)
   exit(rc)
 end
 
