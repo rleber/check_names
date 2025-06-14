@@ -47,6 +47,7 @@ module GemName
   end
 
   def self.check(name)
+    name = name.downcase
     if ruby_gem_exists?(name)
       return {rc: 1, message: "A Gem on RubyGems"}
     end
