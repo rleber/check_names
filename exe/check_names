@@ -1,0 +1,62 @@
+#!/usr/bin/env ruby
+
+# Check: Does a gem name exist
+# Usage:
+#   check_names <name>
+
+# Where to check:
+# 1. Does a Rubygem of this name already exist?
+# 2. Does a Github repository of mine with this name already exist?
+# 3. Does an executable with this name already exist?
+# 4. Does an alias with this name already exist?
+# 5. Does a function with this name already exist?
+
+require_relative '../lib/check_names/version'
+require_relative '../lib/check_names'
+
+def show_help
+  puts <<-HELP
+check_names: Check whether a proposed gem name already exists
+Version #{GemName.version}
+
+Usage:
+  check_names [OPTIONS]... [names]...
+
+check_names exits with a zero return code (success) if no conflicting gem
+name exists. Otherwise it exits with a non-zero return code, with one 
+of the following meanings:
+
+1  A gem exists on Rubygems with this name
+2  You have a github repository of this name
+3  You have an executable (reachable via \$PATH) with this name
+4  You have a shell function with this name
+5  You have an alias with this name
+
+The following options are supported:
+
+--help    -h  Print this help information
+--verbose -v  Print messages about the status of the name check
+  HELP
+end
+
+def main(args)
+  args = args.map { |arg| arg.downcase }
+  verbose = args.index { |arg| %w{-v --verbose}.include?(arg) }
+  args.delete_at(verbose) if verbose
+  if args.size == 0 || %w{-h --help help}.include?(args.first)
+    show_help
+    exit
+  end
+  verbose ||= arg.size > 1
+  rc = 0
+  args.each do |arg|
+    status = GemName.check(arg)
+    puts "#{arg}: #{status[:message]}." if verbose
+    rc = status[:rc] if status[:rc] > rc
+  end
+  exit(rc)
+end
+
+if __FILE__ == $0
+  main(ARGV)
+end
