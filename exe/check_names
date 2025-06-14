@@ -17,7 +17,7 @@ require_relative '../lib/check_names'
 def show_help
   puts <<-HELP
 check_names: Check whether a proposed gem name already exists
-Version #{GemName.version}
+Version #{CheckNames.version}
 
 Usage:
   check_names [OPTIONS]... [names]...
