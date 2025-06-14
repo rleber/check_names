@@ -46,6 +46,11 @@ module GemName
     system("zsh -lic 'alias #{Shellwords.escape(name)}' >/dev/null")
   end
 
+  def self.standard_class_exists?(name)
+    class_name = name.split('_').map(&:capitalize).join
+    Module.const_defined?(class_name)
+  end
+
   def self.check(name)
     name = name.downcase
     if ruby_gem_exists?(name)
@@ -62,6 +67,9 @@ module GemName
     end
     if alias_exists?(name)
       return {rc: 5, message: "An alias"}
+    end
+    if standard_class_exists?(name)
+      return {rc: 6, message: "A Ruby class"}
     end
     {rc: 0, message: "Available"}
   end
