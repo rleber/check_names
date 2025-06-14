@@ -32,10 +32,14 @@ of the following meanings:
 4  You have a shell function with this name
 5  You have an alias with this name
 
-The following options are supported:
+If more than one name was given, the return code is the maximum return code
+received for any name.
+
+The following options are available:
 
 --help    -h  Print this help information
 --verbose -v  Print messages about the status of the name check
+              --verbose is the default if more than one name is given
   HELP
 end
 
