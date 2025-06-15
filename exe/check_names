@@ -22,33 +22,30 @@ Version #{CheckNames.version}
 Usage:
   check_names [OPTIONS]... [names]...
 
-check_names exits with a zero return code (success) if no conflicting gem
-name exists. Otherwise it exits with a non-zero return code, with one 
-of the following meanings:
+check_names looks to see whether the names provided are already in use.
+It outputs the usage (if any) of each name on $STDOUT. It exits with a 
+zero return code if none of the names are already in use. Otherwise it 
+exits with return code 1. 
 
-1  A gem exists on Rubygems with this name
-2  You have a github repository of this name
-3  You have an executable (reachable via \$PATH) with this name
-4  You have a shell function with this name
-5  You have an alias with this name
-6  This name is used by a Ruby standard class
+check_names checks for each of the following uses:
 
-If more than one name was given, the return code is the maximum return code
-received for any name.
+-  The name of a Ruby standard class
+-  The name of a gem on RubyGems
+-  The name of one of your Github repositories
+-  The name of a sehll alias
+-  The name of a shell function
+-  The name of an executable (reachable via \$PATH)
 
 The following options are available:
 
 --help  -h  Print this help information
---quiet -q  Suppress messages about the status of the name check
---all   -a  Normally, check_names stops at the first use it finds.
-            With --all, it checks and reports every use
+--all   -a  Report all uses of the name. (Otherwise, check_names stops at 
+            the first use it finds.)
   HELP
 end
 
 def main(args)
   args = args.map { |arg| arg.downcase }
-  quiet = args.index { |arg| %w{-q --quiet}.include?(arg) }
-  args.delete_at(quiet) if quiet
   all = args.index { |arg| %w{-a --all}.include?(arg) }
   args.delete_at(all) if all
   if args.size == 0 || %w{-h --help help}.include?(args.first)
@@ -56,27 +53,26 @@ def main(args)
     exit
   end
 
-  if all
-    results = GemName.check_names_all(*args)
-  else
-    results = GemName.check_names(*args)
-  end
-  
   rc = 0
-
-  types = []
-  results.each.with_index(1) do |result, count|
-    types << result[:description] if result[:result]
-    rc = result[:check] if result[:check] > rc
-    if count >= results.size || results[count][:name] != result[:name]
-      unless quiet
-        types << "Unused" if types.size == 0
-        puts "#{result[:name]}: #{types.join(', ')}"
+  args.each.with_index(0) do |arg, i|
+    results = []
+    print "#{arg}: "
+    checks_printed_count = 0
+    (1...(CheckNames.check_methods.size)).each do |check|
+      result = CheckNames.check_name_once(check, arg)
+      if result[:result]
+        print ", " if checks_printed_count > 0
+        print result[:description]
+        checks_printed_count += 1
       end
-      types = []
+      if checks_printed_count > 0
+        rc = 1
+        break unless all
+      end
     end
+    print CheckNames.check_method(0)[:description] unless checks_printed_count > 0
+    puts
   end
-  rc = 1 if rc > 0 && (all || args.size > 1)
   exit(rc)
 end
 
