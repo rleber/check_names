@@ -55,7 +55,6 @@ def main(args)
 
   rc = 0
   args.each.with_index(0) do |arg, i|
-    results = []
     print "#{arg}: "
     checks_printed_count = 0
     (1...(CheckNames.check_methods.size)).each do |check|
