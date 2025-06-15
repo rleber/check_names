@@ -79,7 +79,7 @@ module CheckNames
     {check: 0, description: CHECK_METHODS[0][:description], result: true}
   end
 
-  def self.check_name_once(check, name)
+  def self.check_name(check, name)
     method = CHECK_METHODS[check] && CHECK_METHODS[check][:method]
     if method
       result = {check: check, description: CHECK_METHODS[check][:description], result: send(method, name)}
@@ -88,41 +88,5 @@ module CheckNames
     end
     result[:name] = name
     result
-  end
-
-  def self.check_name(name)
-    name = name.downcase
-    result = unused_result.dup
-    (1...(CHECK_METHODS.size)).each do |check|
-      res = check_name_once(check, name)
-      if res[:result]
-        result = res
-        break
-      end
-    end
-    result[:name] = name
-    result
-  end
-
-  def self.check_name_all(name)
-    (1...(CHECK_METHODS.size)).map do |check|
-      check_name_once(check, name)
-    end
-  end
-
-  def self.check_names(*names)
-    results = []
-    names.each do |name|
-      results << check_name(name)
-    end
-    results
-  end
-
-  def self.check_names_all(*names)
-    results = []
-    names.each do |name|
-      results += check_name_all(name)
-    end
-    results
   end
 end

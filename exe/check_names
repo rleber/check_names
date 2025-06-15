@@ -59,7 +59,7 @@ def main(args)
     print "#{arg}: "
     checks_printed_count = 0
     (1...(CheckNames.check_methods.size)).each do |check|
-      result = CheckNames.check_name_once(check, arg)
+      result = CheckNames.check_name(check, arg)
       if result[:result]
         print ", " if checks_printed_count > 0
         print result[:description]
