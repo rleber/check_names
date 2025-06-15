@@ -48,7 +48,13 @@ module GemName
 
   def self.standard_class_exists?(name)
     class_name = name.split('_').map(&:capitalize).join
-    Module.const_defined?(class_name)
+    # Do it this way so the Class space isn't polluted with the classes of this script
+    command = "ruby -e \"puts Module.const_defined?(\\\"#{class_name}\\\").inspect\""
+    begin
+      eval(`#{command}`.chomp)
+    rescue
+      false
+    end
   end
 
   CHECK_METHODS = [
