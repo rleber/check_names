@@ -4,7 +4,7 @@ require_relative "check_names/version"
 require 'shellwords'
 require 'httparty'
 
-module GemName
+module CheckNames
   class Error < StandardError; end
 
   def self.ruby_gem_exists?(name)
@@ -58,14 +58,22 @@ module GemName
   end
 
   CHECK_METHODS = [
-    {method: nil, description: "Unused"}, # 0
-    {method: :ruby_gem_exists?, description: "RubyGem"}, # 1
-    {method: :github_repository_exists?, description: "Github repository"}, # 2
-    {method: :executable_exists?, description: "Executable"}, # 3
-    {method: :function_exists?, description: "Function"}, # 4
-    {method: :alias_exists?, description: "Alias"}, # 5
-    {method: :standard_class_exists?, description: "Class"} # 6
+    {method: nil, description: "Unused"},
+    {method: :standard_class_exists?, description: "Class"},
+    {method: :ruby_gem_exists?, description: "RubyGem"},
+    {method: :github_repository_exists?, description: "Github repository"},
+    {method: :alias_exists?, description: "Alias"},
+    {method: :function_exists?, description: "Function"},
+    {method: :executable_exists?, description: "Executable"}
   ]
+
+  def self.check_methods
+    CHECK_METHODS
+  end
+
+  def self.check_method(i)
+    CHECK_METHODS[i]
+  end
 
   def self.unused_result
     {check: 0, description: CHECK_METHODS[0][:description], result: true}
