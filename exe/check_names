@@ -11,16 +11,19 @@
 # 4. Does an alias with this name already exist?
 # 5. Does a function with this name already exist?
 
+require 'optimist'
 require_relative '../lib/check_names/version'
 require_relative '../lib/check_names'
 
-def show_help
-  puts <<-HELP
-check_names: Check whether a proposed gem name already exists
-Version #{CheckNames.version}
+BANNER = <<-BANNER_TEXT
+#{File.basename(__FILE__)}:
+ersion #{CheckNames.version}
+
+Check whether a proposed gem name already exists
 
 Usage:
-  check_names [OPTIONS]... [names]...
+  #{File.basename(__FILE__)} OPTIONS NAME...
+
 
 check_names looks to see whether the names provided are already in use.
 It outputs the usage (if any) of each name on $STDOUT. It exits with a 
@@ -36,20 +39,23 @@ check_names checks for each of the following uses:
 -  The name of a shell function
 -  The name of an executable (reachable via \$PATH)
 
-The following options are available:
+The following options are allowed:
+BANNER_TEXT
 
---help  -h  Print this help information
---all   -a  Report all uses of the name. (Otherwise, check_names stops at 
-            the first use it finds.)
-  HELP
-end
+def main
+  opts = Optimist.options do
+    version CheckNames.version
+    banner BANNER
+    opt :all, "Check for all possible uses. (Default is to stop at the first one found.)", default: false
+    educate_on_error
+  end
 
-def main(args)
+  all = opts[:all]
+  args = ARGV
   args = args.map { |arg| arg.downcase }
-  all = args.index { |arg| %w{-a --all}.include?(arg) }
-  args.delete_at(all) if all
-  if args.size == 0 || %w{-h --help help}.include?(args.first)
-    show_help
+
+  if args.size == 0
+    Optimist.educate
     exit
   end
 
@@ -76,5 +82,5 @@ def main(args)
 end
 
 if __FILE__ == $0
-  main(ARGV)
+  main
 end
